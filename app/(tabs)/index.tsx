@@ -45,6 +45,9 @@ const QuickActionCard = ({ title, subtitle, emoji, onPress, colors }) => (
 export default function HomeScreen() {
   const handleFunGamesPress = () => {
     router.push('/games');
+  }
+  const handleChapters =()=>{
+    router.push('/chapters'); 
   };
 
   return (
@@ -100,11 +103,11 @@ export default function HomeScreen() {
             <Text style={styles.sectionTitle}>🚀 Quick Start</Text>
             <View style={styles.actionsGrid}>
               <QuickActionCard
-                title="Learn Numbers"
+                title="Start Learning"
                 subtitle="Start with basics"
                 emoji="🔢"
                 colors={['#FFB6C1', '#FFC0CB']}
-                onPress={() => {}}
+                onPress={handleChapters}
               />
               <QuickActionCard
                 title="Practice Quiz"
