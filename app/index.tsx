@@ -11,6 +11,7 @@ import Animated, {
   Easing
 } from 'react-native-reanimated';
 import { Star, Sparkles, Trophy, Heart } from 'lucide-react-native';
+import { useUser } from '@/contexts/UserContext';
 
 const { width, height } = Dimensions.get('window');
 
@@ -61,6 +62,7 @@ const FloatingIcon = ({ children, delay = 0, duration = 3000 }:FloatingIconProp)
 };
 
 export default function WelcomeScreen() {
+  const { hasUser, isLoading } = useUser();
   const scaleValue = useSharedValue(1);
   const glowValue = useSharedValue(0);
 
@@ -77,6 +79,13 @@ export default function WelcomeScreen() {
     );
   }, []);
 
+  useEffect(() => {
+    if (!isLoading && hasUser) {
+      // Auto-navigate to tabs if user exists
+      router.replace('/(tabs)');
+    }
+  }, [hasUser, isLoading]);
+
   const buttonAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scaleValue.value }],
   }));
@@ -89,8 +98,23 @@ export default function WelcomeScreen() {
   });
 
   const handleGetStarted = () => {
-    router.push('/(tabs)');
+    if (hasUser) {
+      router.push('/(tabs)');
+    } else {
+      router.push('/onboarding');
+    }
   };
+
+  // Show loading state while checking user
+  if (isLoading) {
+    return (
+      <LinearGradient colors={['#FFF8DC', '#FFE4E1', '#E6E6FA']} style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Loading...</Text>
+        </View>
+      </LinearGradient>
+    );
+  }
 
   // Responsive sizing based on screen dimensions
   const isTablet = width > 768;
@@ -199,7 +223,7 @@ export default function WelcomeScreen() {
                 style={styles.startButtonGradient}
               >
                 <Text style={[styles.startButtonText, { fontSize: buttonTextSize }]}>
-                  🚀 Start Learning!
+                  {hasUser ? '🎮 Continue Learning!' : '🚀 Start Learning!'}
                 </Text>
                 <View style={styles.buttonIcon}>
                   <Text style={[styles.buttonEmoji, { fontSize: buttonTextSize }]}>✨</Text>
@@ -216,6 +240,16 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 18,
+    fontFamily: 'Nunito-SemiBold',
+    color: '#2C3E50',
   },
   backgroundImage: {
     position: 'absolute',

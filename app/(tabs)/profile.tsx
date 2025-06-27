@@ -1,26 +1,21 @@
 import { View, Text, StyleSheet, ScrollView, Pressable, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { User, Award, Settings, Star, Trophy, Target, Clock, Book } from 'lucide-react-native';
+import { User, Award, Settings, Star, Trophy, Target, Clock, Book, RotateCcw } from 'lucide-react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { useEffect } from 'react';
+import { useUser } from '@/contexts/UserContext';
+import { router } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
 const achievements = [
-  { id: 1, title: 'First Steps', description: 'Started your math journey', emoji: '👶', earned: true },
-  { id: 2, title: 'Number Friend', description: 'Learned about numbers', emoji: '🔢', earned: false },
-  { id: 3, title: 'Addition Star', description: 'Mastered basic addition', emoji: '➕', earned: false },
-  { id: 4, title: 'Game Master', description: 'Played 5 different games', emoji: '🎮', earned: false },
-  { id: 5, title: 'Math Explorer', description: 'Completed 10 lessons', emoji: '🎓', earned: false },
-  { id: 6, title: 'Quiz Champion', description: 'Perfect score on quiz', emoji: '🏆', earned: false },
-];
-
-const stats = [
-  { label: 'Games Played', value: '0', icon: Target, color: ['#FF9A9E', '#FECFEF'] },
-  { label: 'Study Time', value: '0m', icon: Clock, color: ['#A8EDEA', '#FED6E3'] },
-  { label: 'Lessons Complete', value: '0', icon: Book, color: ['#87CEEB', '#B0E0E6'] },
-  { label: 'Stars Earned', value: '0', icon: Star, color: ['#DDA0DD', '#E6E6FA'] },
+  { id: 'first_steps', title: 'First Steps', description: 'Started your math journey', emoji: '👶' },
+  { id: 'game_explorer', title: 'Game Explorer', description: 'Played 5 different games', emoji: '🎮' },
+  { id: 'star_collector', title: 'Star Collector', description: 'Earned 15 stars', emoji: '⭐' },
+  { id: 'streak_master', title: 'Streak Master', description: 'Played for 3 days in a row', emoji: '🔥' },
+  { id: 'math_wizard', title: 'Math Wizard', description: 'Reached level 5', emoji: '🧙‍♂️' },
+  { id: 'perfect_score', title: 'Perfect Score', description: 'Got 100% in any game', emoji: '💯' },
 ];
 
 const StatCard = ({ stat, index }) => {
@@ -49,13 +44,13 @@ const StatCard = ({ stat, index }) => {
   );
 };
 
-const AchievementCard = ({ achievement }) => (
+const AchievementCard = ({ achievement, isEarned }) => (
   <View style={[
     styles.achievementCard,
-    !achievement.earned && styles.achievementLocked
+    !isEarned && styles.achievementLocked
   ]}>
     <LinearGradient
-      colors={achievement.earned 
+      colors={isEarned 
         ? ['rgba(255, 255, 255, 0.9)', 'rgba(255, 255, 255, 0.7)']
         : ['rgba(255, 255, 255, 0.5)', 'rgba(255, 255, 255, 0.3)']
       }
@@ -63,25 +58,25 @@ const AchievementCard = ({ achievement }) => (
     >
       <Text style={[
         styles.achievementEmoji,
-        !achievement.earned && styles.lockedEmoji
+        !isEarned && styles.lockedEmoji
       ]}>
-        {achievement.earned ? achievement.emoji : '🔒'}
+        {isEarned ? achievement.emoji : '🔒'}
       </Text>
       <View style={styles.achievementText}>
         <Text style={[
           styles.achievementTitle,
-          !achievement.earned && styles.lockedText
+          !isEarned && styles.lockedText
         ]}>
           {achievement.title}
         </Text>
         <Text style={[
           styles.achievementDescription,
-          !achievement.earned && styles.lockedText
+          !isEarned && styles.lockedText
         ]}>
           {achievement.description}
         </Text>
       </View>
-      {achievement.earned && (
+      {isEarned && (
         <View style={styles.earnedBadge}>
           <Text style={styles.earnedText}>✓</Text>
         </View>
@@ -91,11 +86,43 @@ const AchievementCard = ({ achievement }) => (
 );
 
 export default function ProfileScreen() {
-  const earnedAchievements = achievements.filter(a => a.earned).length;
+  const { user, getUserStats, clearUserData } = useUser();
+
+  if (!user) {
+    return (
+      <LinearGradient colors={['#FFF8DC', '#FFE4E1', '#E6E6FA']} style={styles.container}>
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.noUserContainer}>
+            <Text style={styles.noUserText}>No user profile found</Text>
+            <Pressable 
+              style={styles.createButton}
+              onPress={() => router.push('/onboarding')}
+            >
+              <LinearGradient colors={['#FF9A9E', '#FECFEF']} style={styles.buttonGradient}>
+                <Text style={styles.buttonText}>Create Profile</Text>
+              </LinearGradient>
+            </Pressable>
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
+    );
+  }
+
+  const stats = getUserStats();
+  const earnedAchievements = user.achievements.length;
   const totalAchievements = achievements.length;
 
-  // Default user info since no authentication
-  const displayName = 'Math Explorer';
+  const statsData = [
+    { label: 'Games Played', value: stats.totalGamesPlayed.toString(), icon: Target, color: ['#FF9A9E', '#FECFEF'] },
+    { label: 'Study Time', value: `${Math.floor(stats.totalTimeSpent / 60)}m`, icon: Clock, color: ['#A8EDEA', '#FED6E3'] },
+    { label: 'Total Score', value: stats.totalScore.toString(), icon: Book, color: ['#87CEEB', '#B0E0E6'] },
+    { label: 'Stars Earned', value: stats.totalStars.toString(), icon: Star, color: ['#DDA0DD', '#E6E6FA'] },
+  ];
+
+  const handleResetProfile = async () => {
+    await clearUserData();
+    router.replace('/onboarding');
+  };
 
   return (
     <LinearGradient colors={['#FFF8DC', '#FFE4E1', '#E6E6FA']} style={styles.container}>
@@ -108,12 +135,12 @@ export default function ProfileScreen() {
                 colors={['#FF9A9E', '#FECFEF']}
                 style={styles.avatar}
               >
-                <User size={40} color="#FFFFFF" />
+                <Text style={styles.avatarEmoji}>{user.avatar}</Text>
               </LinearGradient>
             </View>
-            <Text style={styles.name}>{displayName}</Text>
-            <Text style={styles.level}>Level 1 • Beginner</Text>
-            <Text style={styles.email}>Ready to learn math!</Text>
+            <Text style={styles.name}>{user.name}</Text>
+            <Text style={styles.level}>Level {user.level} • Math Explorer</Text>
+            <Text style={styles.experience}>{user.experience} XP</Text>
           </View>
 
           {/* Progress Overview */}
@@ -124,9 +151,11 @@ export default function ProfileScreen() {
             >
               <Text style={styles.progressTitle}>🏆 Your Journey</Text>
               <View style={styles.progressBar}>
-                <View style={[styles.progressFill, { width: '5%' }]} />
+                <View style={[styles.progressFill, { width: `${(user.experience % 100)}%` }]} />
               </View>
-              <Text style={styles.progressText}>Just getting started!</Text>
+              <Text style={styles.progressText}>
+                {100 - (user.experience % 100)} XP to next level
+              </Text>
             </LinearGradient>
           </View>
 
@@ -134,11 +163,43 @@ export default function ProfileScreen() {
           <View style={styles.statsSection}>
             <Text style={styles.sectionTitle}>📊 Your Stats</Text>
             <View style={styles.statsGrid}>
-              {stats.map((stat, index) => (
+              {statsData.map((stat, index) => (
                 <StatCard key={stat.label} stat={stat} index={index} />
               ))}
             </View>
           </View>
+
+          {/* Recent Games */}
+          {user.gameScores.length > 0 && (
+            <View style={styles.recentSection}>
+              <Text style={styles.sectionTitle}>🎮 Recent Games</Text>
+              <View style={styles.recentGames}>
+                {user.gameScores.slice(-3).reverse().map((score, index) => (
+                  <View key={`${score.gameId}-${index}`} style={styles.recentGameCard}>
+                    <LinearGradient
+                      colors={['rgba(255, 255, 255, 0.9)', 'rgba(255, 255, 255, 0.7)']}
+                      style={styles.recentGameGradient}
+                    >
+                      <Text style={styles.recentGameName}>{score.gameName}</Text>
+                      <View style={styles.recentGameStats}>
+                        <Text style={styles.recentGameScore}>{score.score} pts</Text>
+                        <View style={styles.recentGameStars}>
+                          {[1, 2, 3].map((star) => (
+                            <Star
+                              key={star}
+                              size={12}
+                              color="#FFD700"
+                              fill={star <= score.stars ? '#FFD700' : 'transparent'}
+                            />
+                          ))}
+                        </View>
+                      </View>
+                    </LinearGradient>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
 
           {/* Achievements */}
           <View style={styles.achievementsSection}>
@@ -150,7 +211,11 @@ export default function ProfileScreen() {
             </View>
             <View style={styles.achievementsList}>
               {achievements.map((achievement) => (
-                <AchievementCard key={achievement.id} achievement={achievement} />
+                <AchievementCard 
+                  key={achievement.id} 
+                  achievement={achievement} 
+                  isEarned={user.achievements.includes(achievement.id)}
+                />
               ))}
             </View>
           </View>
@@ -165,7 +230,7 @@ export default function ProfileScreen() {
                   style={styles.settingGradient}
                 >
                   <Settings size={24} color="#5D6D7E" />
-                  <Text style={styles.settingText}>App Settings</Text>
+                  <Text style={styles.settingText}>Game Preferences</Text>
                   <Text style={styles.settingArrow}>→</Text>
                 </LinearGradient>
               </Pressable>
@@ -181,13 +246,13 @@ export default function ProfileScreen() {
                 </LinearGradient>
               </Pressable>
               
-              <Pressable style={styles.settingItem}>
+              <Pressable style={styles.settingItem} onPress={handleResetProfile}>
                 <LinearGradient
                   colors={['rgba(255, 255, 255, 0.9)', 'rgba(255, 255, 255, 0.7)']}
                   style={styles.settingGradient}
                 >
-                  <Award size={24} color="#5D6D7E" />
-                  <Text style={styles.settingText}>Parent Dashboard</Text>
+                  <RotateCcw size={24} color="#E74C3C" />
+                  <Text style={[styles.settingText, { color: '#E74C3C' }]}>Reset Profile</Text>
                   <Text style={styles.settingArrow}>→</Text>
                 </LinearGradient>
               </Pressable>
@@ -201,9 +266,12 @@ export default function ProfileScreen() {
               style={styles.motivationCard}
             >
               <Text style={styles.motivationEmoji}>🌟</Text>
-              <Text style={styles.motivationTitle}>Welcome to Math Adventure!</Text>
+              <Text style={styles.motivationTitle}>Keep Learning!</Text>
               <Text style={styles.motivationText}>
-                Start playing games to unlock achievements and track your progress. Every step counts!
+                {stats.totalGamesPlayed === 0 
+                  ? "Start playing games to track your amazing progress!"
+                  : `You've played ${stats.totalGamesPlayed} games and earned ${stats.totalStars} stars! Keep up the great work!`
+                }
               </Text>
             </LinearGradient>
           </View>
@@ -223,6 +291,37 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
     paddingHorizontal: 20,
+  },
+  noUserContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  noUserText: {
+    fontSize: 18,
+    fontFamily: 'Nunito-SemiBold',
+    color: '#5D6D7E',
+    marginBottom: 20,
+  },
+  createButton: {
+    borderRadius: 15,
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+  },
+  buttonGradient: {
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+  },
+  buttonText: {
+    fontSize: 16,
+    fontFamily: 'Fredoka-Bold',
+    color: '#FFFFFF',
   },
   header: {
     alignItems: 'center',
@@ -245,6 +344,9 @@ const styles = StyleSheet.create({
     borderWidth: 4,
     borderColor: 'rgba(255, 255, 255, 0.8)',
   },
+  avatarEmoji: {
+    fontSize: 40,
+  },
   name: {
     fontSize: 28,
     fontFamily: 'Fredoka-Bold',
@@ -257,7 +359,7 @@ const styles = StyleSheet.create({
     color: '#5D6D7E',
     marginBottom: 4,
   },
-  email: {
+  experience: {
     fontSize: 14,
     fontFamily: 'Nunito-Regular',
     color: '#7F8C8D',
@@ -350,6 +452,46 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.2)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 1,
+  },
+  recentSection: {
+    marginBottom: 30,
+  },
+  recentGames: {
+    gap: 12,
+  },
+  recentGameCard: {
+    borderRadius: 12,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+  },
+  recentGameGradient: {
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 107, 107, 0.2)',
+  },
+  recentGameName: {
+    fontSize: 16,
+    fontFamily: 'Fredoka-SemiBold',
+    color: '#2C3E50',
+    marginBottom: 8,
+  },
+  recentGameStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  recentGameScore: {
+    fontSize: 14,
+    fontFamily: 'Nunito-Bold',
+    color: '#5D6D7E',
+  },
+  recentGameStars: {
+    flexDirection: 'row',
+    gap: 2,
   },
   achievementsSection: {
     marginBottom: 30,
