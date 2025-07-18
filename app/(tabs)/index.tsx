@@ -5,12 +5,14 @@ import { BookOpen, Target, Star, TrendingUp, Gamepad2 } from 'lucide-react-nativ
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { useEffect } from 'react';
 import { router } from 'expo-router';
+import { Audio } from 'expo-av';
+import { useState, useRef } from 'react';
+import Slider from '@react-native-community/slider';
 
 const { width } = Dimensions.get('window');
 
 const StatCard = ({ title, value, icon: Icon, color, delay = 0 }) => {
   const scale = useSharedValue(0);
-
   useEffect(() => {
     setTimeout(() => {
       scale.value = withSpring(1, { damping: 15, stiffness: 100 });
@@ -43,11 +45,41 @@ const QuickActionCard = ({ title, subtitle, emoji, onPress, colors }) => (
 );
 
 export default function HomeScreen() {
+  const soundRef = useRef<Audio.Sound | null>(null);
+  const [volume, setVolume] = useState(0.5);
+  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
+
+  const handlePlayMusic = async () => {
+    try {
+      if (!soundRef.current) {
+        const { sound } = await Audio.Sound.createAsync(
+          require('../../assets/music/bg_music.mp3'),
+          { isLooping: true, volume }
+        );
+        soundRef.current = sound;
+      }
+      await soundRef.current.playAsync();
+      setIsMusicPlaying(true);
+    } catch (error) {
+      console.error('Error playing sound:', error);
+    }
+  };
+
+  const handleVolumeChange = async (value: number) => {
+    setVolume(value);
+    if (soundRef.current) {
+      await soundRef.current.setVolumeAsync(value);
+    }
+  };
   const handleFunGamesPress = () => {
     router.push('/games');
   }
   const handleChapters =()=>{
     router.push('/chapters'); 
+  }
+  const handleTeacher=()=>{
+    router.push('/ai_teacher');
+
   };
 
   return (
@@ -64,6 +96,26 @@ export default function HomeScreen() {
               <Text style={styles.streakEmoji}>🔥</Text>
               <Text style={styles.streakText}>Keep Going!</Text>
             </View>
+            <View style={styles.streakContainer}>
+            <Pressable onPress={handlePlayMusic}>
+            <Text style={styles.streakEmoji}>🔊</Text>
+    <Text style={styles.streakText}>Play Music</Text>
+  </Pressable>
+
+  {isMusicPlaying && (
+    <Slider
+      style={{ width: 120, marginTop: 8 }}
+      minimumValue={0}
+      maximumValue={1}
+      value={volume}
+      onValueChange={handleVolumeChange}
+      minimumTrackTintColor="#FF6B6B"
+      maximumTrackTintColor="#ddd"
+    />
+  )}
+</View>
+
+            
           </View>
 
           {/* Stats Row */}
@@ -110,11 +162,11 @@ export default function HomeScreen() {
                 onPress={handleChapters}
               />
               <QuickActionCard
-                title="Practice Quiz"
+                title="AI Teacher"
                 subtitle="Test your skills"
                 emoji="🧠"
                 colors={['#DDA0DD', '#E6E6FA']}
-                onPress={() => {}}
+                onPress={handleTeacher}
               />
               <QuickActionCard
                 title="Fun Games"
@@ -196,7 +248,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+     alignItems: 'center',
     paddingVertical: 20,
   },
   greeting: {

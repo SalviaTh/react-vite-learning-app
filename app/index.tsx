@@ -98,11 +98,7 @@ export default function WelcomeScreen() {
   });
 
   const handleGetStarted = () => {
-    if (hasUser) {
       router.push('/(tabs)');
-    } else {
-      router.push('/onboarding');
-    }
   };
 
   // Show loading state while checking user

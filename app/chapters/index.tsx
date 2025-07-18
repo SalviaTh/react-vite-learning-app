@@ -23,13 +23,13 @@ export default function LevelSelectionScreen() {
           <ArrowLeft size={24} color="#2C3E50" />
         </Pressable>
 
-        <Text style={styles.title}>🚀 Choose Your Math Journey</Text>
+        <Text style={styles.title}>🚀 Select your standard Buddy</Text>
 
         <View style={styles.grid}>
           <Pressable onPress={() => handleLevelSelect('easy')}>
             <LinearGradient colors={['#A8EDEA', '#FED6E3']} style={styles.levelCard}>
               <Text style={styles.emoji}>🌱</Text>
-              <Text style={styles.levelName}>Easy</Text>
+              <Text style={styles.levelName}>Standard 1</Text>
               <Text style={styles.levelDesc}>Start with the basics</Text>
             </LinearGradient>
           </Pressable>
@@ -37,7 +37,7 @@ export default function LevelSelectionScreen() {
           <Pressable onPress={() => handleLevelSelect('beginner')}>
             <LinearGradient colors={['#DDA0DD', '#E6E6FA']} style={styles.levelCard}>
               <Text style={styles.emoji}>🧠</Text>
-              <Text style={styles.levelName}>Beginner</Text>
+              <Text style={styles.levelName}>Standard 2</Text>
               <Text style={styles.levelDesc}>Simple problem solving</Text>
             </LinearGradient>
           </Pressable>
@@ -45,7 +45,7 @@ export default function LevelSelectionScreen() {
           <Pressable onPress={() => handleLevelSelect('medium')}>
             <LinearGradient colors={['#98FB98', '#90EE90']} style={styles.levelCard}>
               <Text style={styles.emoji}>📘</Text>
-              <Text style={styles.levelName}>Medium</Text>
+              <Text style={styles.levelName}>Standard 3</Text>
               <Text style={styles.levelDesc}>Get a little challenge</Text>
             </LinearGradient>
           </Pressable>
@@ -53,10 +53,19 @@ export default function LevelSelectionScreen() {
           <Pressable onPress={() => handleLevelSelect('hard')}>
             <LinearGradient colors={['#F0E68C', '#FFE4B5']} style={styles.levelCard}>
               <Text style={styles.emoji}>🚀</Text>
-              <Text style={styles.levelName}>Hard</Text>
+              <Text style={styles.levelName}>Standard 4</Text>
               <Text style={styles.levelDesc}>Tough but rewarding</Text>
             </LinearGradient>
           </Pressable>
+
+          <Pressable onPress={() => handleLevelSelect('hard')}>
+            <LinearGradient colors={['#FF9A9E', '#FECFEF']} style={styles.levelCard}>
+              <Text style={styles.emoji}>🚀</Text>
+              <Text style={styles.levelName}>Standard 5</Text>
+              <Text style={styles.levelDesc}>Tough but rewarding</Text>
+            </LinearGradient>
+          </Pressable>
+
 
           {/* <Pressable onPress={() => handleLevelSelect('difficult')}>
             <LinearGradient colors={['#B2EBF2', '#80DEEA']} style={styles.levelCard}>
