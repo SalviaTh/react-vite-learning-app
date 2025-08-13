@@ -12,12 +12,12 @@ const { width } = Dimensions.get('window');
 const easyGames = [
   {
     id: 1,
-    title: 'Knowing the Numbers',
-    description: 'Learn what numbers are and practice saying them!',
-    emoji: '🔢',
+    title: 'Finding the Fury Cat',
+    description: 'Lets Go and find the Fury Little Cat!',
+    emoji: '🐱',
     difficulty: 'Easy',
     color: ['#FF9A9E', '#FECFEF'],
-    route: '/games/knowing-numbers',
+    route: '/chapters/standard_1/furry_cat',
     completed: false,
     stars: 0
   },
@@ -145,7 +145,7 @@ const GameCard = ({ game, index, onPress }) => {
             </View>
             <View style={styles.playButton}>
               <Play size={16} color="#FFFFFF" fill="#FFFFFF" />
-              <Text style={styles.playText}>PLAY</Text>
+              <Text style={styles.playText}>Let'sGo</Text>
             </View>
           </View>
         </LinearGradient>
@@ -175,8 +175,7 @@ export default function EasyChapterScreen() {
             <ArrowLeft size={24} color="#2C3E50" />
           </Pressable>
           <View style={styles.headerContent}>
-            <Text style={styles.title}>🌱 Easy Level</Text>
-            <Text style={styles.subtitle}>Perfect for beginners!</Text>
+            <Text style={styles.title}>Standard 1</Text>
           </View>
         </View>
 
